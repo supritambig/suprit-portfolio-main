@@ -8,7 +8,7 @@ pipeline {
         DOCKERHUB_REPO = 'portfolio-brocode'
         VERSION = '$BUILD_ID'
         CONTAINER_NAME = 'app'
-        CONTAINER_PORT = '8003'
+        CONTAINER_PORT = '8085'
         REQUEST_PORT = '80'
     }
     stages {
