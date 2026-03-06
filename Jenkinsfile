@@ -1,6 +1,7 @@
 pipeline {
-    agent any
-
+    agent {
+        label "slave_node_java"
+    }
     environment {
         DOCKERHUB_USERNAME = 'supritambig'
         DOCKER_IMAGE = 'webapp'
