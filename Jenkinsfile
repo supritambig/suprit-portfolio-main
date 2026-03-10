@@ -65,9 +65,10 @@ pipeline {
             }
         }
 
-        stage("Run Ansible Playbook") {
+        stage('Run Ansible Playbook') {
+            agent { label 'master' }
             steps {
-                sh "ansible-playbook -i inventory playbook.yml"
+                sh 'ansible-playbook -i inventory playbook.yml'
             }
         }
     }
