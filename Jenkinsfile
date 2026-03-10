@@ -2,12 +2,12 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_USERNAME = 'supritambig'
+        DOCKERHUB_USERNAME = 'suprit43'
         DOCKER_IMAGE = 'webapp'
-        DOCKERHUB_REPO = 'portfolio-brocode'
+        DOCKERHUB_REPO = 'dockerpr-webapp'
         VERSION = '$BUILD_ID'
         CONTAINER_NAME = 'app'
-        CONTAINER_PORT = '8003'
+        CONTAINER_PORT = '8085'
         REQUEST_PORT = '80'
     }
     stages {
@@ -67,6 +67,11 @@ pipeline {
         stage("Remove docker image locally") {
             steps {
                 sh "sudo docker rmi -f ${DOCKERHUB_USERNAME}/${DOCKERHUB_REPO}:${VERSION}"
+            }
+        }
+        stage('Run Ansible Playbook') {
+            steps {
+                sh 'ansible-playbook -i inventory playbook.yml'
             }
         }
     }

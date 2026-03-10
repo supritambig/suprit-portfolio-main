@@ -1,0 +1,8 @@
+---
+- name: Run Docker Container
+  docker_container:
+    name: webapp
+    image: suprit43/dockerpr-webapp:latest
+    state: started
+    ports:
+      - "8085:80"
