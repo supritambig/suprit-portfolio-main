@@ -2,77 +2,72 @@ pipeline {
     agent {
         label "slave_node_java"
     }
+
     environment {
-        DOCKERHUB_USERNAME = 'suprit43'
-        DOCKER_IMAGE = 'webapp'
-        DOCKERHUB_REPO = 'dockerpr-webapp'
-        VERSION = '$BUILD_ID'
-        CONTAINER_NAME = 'app'
-        CONTAINER_PORT = '8085'
-        REQUEST_PORT = '80'
+        DOCKERHUB_USERNAME = "suprit43"
+        DOCKER_IMAGE = "webapp"
+        DOCKERHUB_REPO = "dockerpr-webapp"
+        VERSION = "${BUILD_ID}"
+        CONTAINER_NAME = "app"
+        CONTAINER_PORT = "8085"
+        REQUEST_PORT = "80"
     }
+
     stages {
-        stage("docker version") {
+
+        stage("Check Docker Version") {
             steps {
-                sh "sudo docker --version"
+                sh "docker --version"
             }
         }
-        stage("Build Docker Image"){
+
+        stage("Build Docker Image") {
             steps {
-                sh "sudo docker build -t ${DOCKER_IMAGE} ."
+                sh "docker build -t ${DOCKER_IMAGE} ."
             }
         }
-        stage("Docker tag") {
+
+        stage("Tag Docker Image") {
             steps {
                 sh """
-                sudo docker tag ${DOCKER_IMAGE} ${DOCKERHUB_USERNAME}/${DOCKERHUB_REPO}:${VERSION}
-                sudo docker tag ${DOCKER_IMAGE} ${DOCKERHUB_USERNAME}/${DOCKERHUB_REPO}:latest
+                docker tag ${DOCKER_IMAGE} ${DOCKERHUB_USERNAME}/${DOCKERHUB_REPO}:${VERSION}
+                docker tag ${DOCKER_IMAGE} ${DOCKERHUB_USERNAME}/${DOCKERHUB_REPO}:latest
                 """
             }
         }
-        stage("Docker Images"){
+
+        stage("Show Docker Images") {
             steps {
-                sh "sudo docker images"
+                sh "docker images"
             }
         }
-        stage("Remove Older Container") {
+
+        stage("Remove Old Container") {
             steps {
-                sh "sudo docker rm -f ${CONTAINER_NAME}"
-            }
-            post {
-                success {
-                    echo "Container is removed"
-                }
-                failure {
-                    echo "Container is not Present...."
-                    sh "sudo docker run -it -d --name ${CONTAINER_NAME} -p ${CONTAINER_PORT}:${REQUEST_PORT} ${DOCKERHUB_USERNAME}/${DOCKERHUB_REPO}:latest"
-                }
+                sh "docker rm -f ${CONTAINER_NAME} || true"
             }
         }
-        stage("Run Container"){
-            steps{
-                sh "sudo docker run -it -d --name ${CONTAINER_NAME} -p ${CONTAINER_PORT}:${REQUEST_PORT} ${DOCKERHUB_USERNAME}/${DOCKERHUB_REPO}:latest"
-            }
-            post {
-                always {
-                    echo "Docker container from Server"
-                }
-                success {
-                    echo "Docker continer deployed successfully"
-                }
-                failure {
-                    echo "Docker container is alreay Running"
-                }
+
+        stage("Run Docker Container") {
+            steps {
+                sh """
+                docker run -d \
+                --name ${CONTAINER_NAME} \
+                -p ${CONTAINER_PORT}:${REQUEST_PORT} \
+                ${DOCKERHUB_USERNAME}/${DOCKERHUB_REPO}:latest
+                """
             }
         }
-        stage("Remove docker image locally") {
+
+        stage("Remove Local Docker Image") {
             steps {
-                sh "sudo docker rmi -f ${DOCKERHUB_USERNAME}/${DOCKERHUB_REPO}:${VERSION}"
+                sh "docker rmi -f ${DOCKERHUB_USERNAME}/${DOCKERHUB_REPO}:${VERSION} || true"
             }
         }
-        stage('Run Ansible Playbook') {
+
+        stage("Run Ansible Playbook") {
             steps {
-                sh 'ansible-playbook -i inventory playbook.yml'
+                sh "ansible-playbook -i inventory playbook.yml"
             }
         }
     }
